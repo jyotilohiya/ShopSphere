@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Environment / secrets
+.env
+*.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# SQLite database files (including WAL/SHM sidecars and backups)
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+*backup*.db
+*.backup.db

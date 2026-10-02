@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopSphere - Multi-Vendor E-Commerce with Analytics</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <div class="logo" onclick="app.navigate('home')">ShopSphere</div>
+    
+    <div class="search-bar">
+        <input type="text" id="global-search" placeholder="Search products, categories, vendors...">
+        <button onclick="app.searchProducts()">Search</button>
+    </div>
+
+    <nav>
+        <a onclick="app.navigate('home')">Home</a>
+        <a onclick="app.navigate('vendor-portal')">Vendor</a>
+        <a onclick="app.navigate('admin-dashboard')">Admin</a>
+        <a onclick="app.navigate('cart')">Cart <span class="badge" id="cart-badge">0</span></a>
+    </nav>
+</header>
+
+<!-- HOME / PRODUCTS VIEW -->
+<div id="view-home" class="view-section active">
+    <div class="hero">
+        <h2>Premium Quality. Unbeatable Prices.</h2>
+        <p>Your one-stop destination for Electronics, Fashion, Sports, and more from verified vendors.</p>
+    </div>
+
+    <div class="layout">
+        <!-- Sidebar Filters -->
+        <aside class="sidebar">
+            <h3>Filters</h3>
+            <div class="filter-group">
+                <label><strong>Category</strong></label>
+                <select class="form-control" id="filter-category" onchange="app.loadProducts()">
+                    <option value="All">All Categories</option>
+                    <option value="Electronics">Electronics</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Sports">Sports</option>
+                    <option value="Home & Kitchen">Home & Kitchen</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label><strong>Sort By</strong></label>
+                <select class="form-control" id="sort-by" onchange="app.loadProducts()">
+                    <option value="newest">Newest First</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
+                    <option value="rating">Highest Rated</option>
+                </select>
+            </div>
+            
+            <div class="mt-2">
+                <h3>Recommended for You</h3>
+                <div id="recommended-products" style="margin-top:1rem; font-size:0.9rem;"></div>
+            </div>
+            
+            <div class="mt-2">
+                <h3>Recently Viewed</h3>
+                <div id="recently-viewed" style="margin-top:1rem; font-size:0.9rem;"></div>
+            </div>
+        </aside>
+
+        <!-- Main Product Grid -->
+        <main class="main-content">
+            <h2 class="mb-1" id="home-title">Featured Products</h2>
+            <div id="products-grid" class="products-grid">
+                <!-- Products dynamically loaded here -->
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- CART VIEW -->
+<div id="view-cart" class="view-section">
+    <h2 class="mb-1">Your Shopping Cart</h2>
+    <div class="cart-layout">
+        <div class="cart-items" id="cart-items-container">
+            <!-- Cart items dynamically loaded -->
+        </div>
+        <div class="cart-summary">
+            <h3>Order Summary</h3>
+            <div style="margin: 1rem 0; border-bottom: 1px solid var(--border); padding-bottom: 1rem;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span>Subtotal</span>
+                    <span id="cart-subtotal">₹0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span>Discount</span>
+                    <span id="cart-discount">₹0</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem;">
+                    <span>Delivery</span>
+                    <span>Free</span>
+                </div>
+                
+                <div style="margin-top:1rem; display:flex; gap:0.5rem;">
+                    <input type="text" id="coupon-code" class="form-control" placeholder="Coupon Code (e.g. SHOP10)">
+                    <button class="btn btn-secondary" onclick="app.applyCoupon()">Apply</button>
+                </div>
+                <div id="coupon-msg" style="font-size:0.85rem; margin-top:0.5rem;"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:1.25rem; margin-bottom:1rem;">
+                <span>Total</span>
+                <span id="cart-total">₹0</span>
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="app.navigate('checkout')">Proceed to Checkout</button>
+        </div>
+    </div>
+</div>
+
+<!-- CHECKOUT VIEW -->
+<div id="view-checkout" class="view-section">
+    <h2 class="mb-1">Secure Checkout</h2>
+    <div style="max-width: 600px; margin: 0 auto; background: var(--card-bg); padding: 2rem; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-md);">
+        <form id="checkout-form" onsubmit="app.placeOrder(event)">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="checkout-name" class="form-control" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="checkout-email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" id="checkout-phone" class="form-control" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Delivery Address</label>
+                <textarea id="checkout-address" class="form-control" rows="3" required></textarea>
+            </div>
+            
+            <div class="alert alert-success d-none" id="checkout-success"></div>
+            <div class="alert alert-error d-none" id="checkout-error"></div>
+            
+            <button type="submit" class="btn btn-primary" style="width:100%; font-size:1.1rem; padding:0.75rem;">Place Order - <span id="checkout-total-btn"></span></button>
+        </form>
+    </div>
+</div>
+
+<!-- VENDOR PORTAL (LOGIN/REG) -->
+<div id="view-vendor-portal" class="view-section">
+    <div class="layout" style="justify-content: center;">
+        <div style="max-width: 400px; width: 100%; background: var(--card-bg); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
+            <h2 class="text-center mb-1">Vendor Login</h2>
+            <form id="vendor-login-form" onsubmit="app.vendorLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" class="form-control" required>
+                </div>
+                <div class="alert alert-error d-none" id="login-error"></div>
+                <button type="submit" class="btn btn-primary" style="width:100%">Login</button>
+            </form>
+            
+            <hr style="margin: 2rem 0; border: none; border-top: 1px solid var(--border);">
+            
+            <h2 class="text-center mb-1">Register Business</h2>
+            <form id="vendor-reg-form" onsubmit="app.vendorRegister(event)">
+                <div class="form-group"><label>Name</label><input type="text" id="reg-name" class="form-control" required></div>
+                <div class="form-group"><label>Business Name</label><input type="text" id="reg-business" class="form-control" required></div>
+                <div class="form-group"><label>Email</label><input type="email" id="reg-email" class="form-control" required></div>
+                <div class="form-group"><label>Phone</label><input type="tel" id="reg-phone" class="form-control" required></div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="reg-category" class="form-control" required>
+                        <option value="">Select...</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fashion">Fashion</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Home & Kitchen">Home & Kitchen</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Password</label><input type="password" id="reg-password" class="form-control" required></div>
+                <div class="alert alert-success d-none" id="reg-success"></div>
+                <div class="alert alert-error d-none" id="reg-error"></div>
+                <button type="submit" class="btn btn-secondary" style="width:100%">Register</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- VENDOR DASHBOARD -->
+<div id="view-vendor-dashboard" class="view-section">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h2>Vendor Dashboard - <span id="dash-business-name"></span></h2>
+        <button class="btn btn-danger" onclick="app.vendorLogout()">Logout</button>
+    </div>
+    
+    <div class="dashboard-nav">
+        <button class="active" onclick="app.switchVendorTab('overview')" id="tab-overview">Overview</button>
+        <button onclick="app.switchVendorTab('products')" id="tab-products">My Products</button>
+        <button onclick="app.switchVendorTab('orders')" id="tab-orders">Orders</button>
+    </div>
+
+    <div id="vendor-overview" class="vendor-tab">
+        <div class="stats-grid">
+            <div class="stat-card"><h4>Total Revenue</h4><div class="value" id="vd-rev">₹0</div></div>
+            <div class="stat-card"><h4>Orders</h4><div class="value" id="vd-ord">0</div></div>
+            <div class="stat-card"><h4>Products</h4><div class="value" id="vd-prod">0</div></div>
+            <div class="stat-card"><h4>Units Sold</h4><div class="value" id="vd-units">0</div></div>
+        </div>
+        <div class="layout mt-2">
+            <div style="flex:1">
+                <h3>Low Stock Products</h3>
+                <div class="table-wrapper">
+                    <table id="vd-low-stock-table">
+                        <thead><tr><th>Name</th><th>Stock</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div style="flex:1">
+                <h3>Recent Orders</h3>
+                <div class="table-wrapper">
+                    <table id="vd-recent-orders-table">
+                        <thead><tr><th>ID</th><th>Date</th><th>Product</th><th>Qty</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="vendor-products" class="vendor-tab d-none">
+        <div style="display:flex; justify-content:space-between; margin-bottom:1rem; gap:1rem; flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="app.showAddProductModal()">+ Add New Product</button>
+            <div style="display:flex; gap:0.5rem; flex:1; max-width:400px;">
+                <input type="text" id="vd-product-search" class="form-control" placeholder="Search products..." oninput="app.filterVendorProducts()">
+                <select id="vd-product-category" class="form-control" onchange="app.filterVendorProducts()">
+                    <option value="All">All Categories</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table id="vd-products-table">
+                <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="vendor-orders" class="vendor-tab d-none">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:1rem; gap:0.5rem; flex-wrap:wrap;">
+            <div style="display:flex; gap:0.5rem; flex:1; max-width:400px;">
+                <input type="text" id="vd-order-search" class="form-control" placeholder="Search by Order ID or Product..." oninput="app.filterVendorOrders()">
+                <select id="vd-order-status" class="form-control" onchange="app.filterVendorOrders()">
+                    <option value="All">All Statuses</option>
+                    <option value="Placed">Placed</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+            </div>
+        </div>
+        <div class="table-wrapper">
+            <table id="vd-orders-table">
+                <thead><tr><th>Order ID</th><th>Date</th><th>Product</th><th>Qty</th><th>Subtotal</th><th>Customer</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- VENDOR ORDER DETAILS MODAL -->
+<div class="modal-backdrop" id="vendor-order-modal" onclick="if(event.target===this) app.closeModal('vendor-order-modal')">
+    <div class="modal-content" style="padding: 2rem;">
+        <h2 class="mb-1">Manage Order <span id="vom-id"></span></h2>
+        <div id="vom-details" style="margin-bottom:1.5rem;"></div>
+        <div class="form-group">
+            <label>Update Status</label>
+            <div style="display:flex; gap:0.5rem;">
+                <select id="vom-status" class="form-control">
+                    <option value="Placed">Placed</option>
+                    <option value="Processing">Processing</option>
+                    <option value="Shipped">Shipped</option>
+                    <option value="Delivered">Delivered</option>
+                    <option value="Cancelled">Cancelled</option>
+                </select>
+                <button class="btn btn-primary" onclick="app.updateOrderStatus()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN DASHBOARD & ANALYTICS -->
+<div id="view-admin-dashboard" class="view-section">
+    <h2 class="mb-1">Platform Analytics (Admin)</h2>
+    <div class="stats-grid">
+        <div class="stat-card"><h4>Total Revenue</h4><div class="value" id="ad-rev">₹0</div></div>
+        <div class="stat-card"><h4>Total Orders</h4><div class="value" id="ad-ord">0</div></div>
+        <div class="stat-card"><h4>Total Products</h4><div class="value" id="ad-prod">0</div></div>
+        <div class="stat-card"><h4>Total Vendors</h4><div class="value" id="ad-vend">0</div></div>
+    </div>
+    
+    <div class="layout">
+        <div style="flex:1;">
+            <h3>Business Insights</h3>
+            <ul style="margin-left: 1.5rem; margin-top: 1rem; line-height: 2;" id="ad-insights">
+                <!-- Insights populated dynamically -->
+            </ul>
+        </div>
+        <div style="flex:1;">
+            <h3>Top Selling Products</h3>
+            <div class="table-wrapper">
+                <table id="ad-top-products">
+                    <thead><tr><th>Product</th><th>Units Sold</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PRODUCT DETAILS MODAL -->
+<div class="modal-backdrop" id="product-modal" onclick="if(event.target===this) app.closeModal('product-modal')">
+    <div class="modal-content">
+        <button class="modal-close" onclick="app.closeModal('product-modal')">&times;</button>
+        <div class="product-details" id="pd-content">
+            <!-- Dynamically populated -->
+        </div>
+    </div>
+</div>
+
+<!-- VENDOR ADD/EDIT PRODUCT MODAL -->
+<div class="modal-backdrop" id="vendor-product-modal" onclick="if(event.target===this) app.closeModal('vendor-product-modal')">
+    <div class="modal-content" style="padding: 2rem;">
+        <h2 class="mb-1" id="vpm-title">Add Product</h2>
+        <form id="vpm-form" onsubmit="app.saveVendorProduct(event)">
+            <input type="hidden" id="vpm-id">
+            <div class="form-group"><label>Name</label><input type="text" id="vpm-name" class="form-control" required></div>
+            <div class="form-row">
+                <div class="form-group"><label>Price (₹)</label><input type="number" id="vpm-price" class="form-control" required></div>
+                <div class="form-group"><label>Stock</label><input type="number" id="vpm-stock" class="form-control" required></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="vpm-category" class="form-control" required>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Fashion">Fashion</option>
+                        <option value="Sports">Sports</option>
+                        <option value="Home & Kitchen">Home & Kitchen</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>Image URL (e.g. /images/products/img.jpg)</label><input type="text" id="vpm-image" class="form-control" required></div>
+            </div>
+            <div class="form-group"><label>Description</label><textarea id="vpm-desc" class="form-control" rows="3"></textarea></div>
+            <button type="submit" class="btn btn-primary" style="width:100%">Save Product</button>
+        </form>
+    </div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+The above content shows the entire, complete file contents of the requested file.
